@@ -558,6 +558,10 @@ struct janus_plugin_rtp_extensions {
 	/*! \brief Whether the video orientation extension says it's flipped horizontally
 	 * @note Will be ignored if no rotation value is set */
 	gboolean video_flipped;
+	// TODO comment
+	int16_t playout_delay_min;
+	// TODO comment
+	int16_t playout_delay_max;
 };
 /*! \brief Helper method to initialise/reset the RTP extensions field
  * @note This is important because each of the supported extensions may

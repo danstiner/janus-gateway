@@ -4850,7 +4850,8 @@ void janus_ice_relay_rtp(janus_ice_handle *handle, janus_plugin_rtp *packet) {
 	if(handle->stream->mid_ext_id > 0 || (packet->video && handle->stream->abs_send_time_ext_id > 0) ||
 			(packet->video && handle->stream->transport_wide_cc_ext_id > 0) ||
 			(!packet->video && packet->extensions.audio_level != -1 && handle->stream->audiolevel_ext_id > 0) ||
-			(packet->video && packet->extensions.video_rotation != -1 && handle->stream->videoorientation_ext_id > 0)) {
+			(packet->video && packet->extensions.video_rotation != -1 && handle->stream->videoorientation_ext_id > 0) ||
+			(packet->video && packet->extensions.playout_delay_min != -1 && packet->extensions.playout_delay_max != -1 && handle->stream->playout_delay_ext_id > 0)) {
 		header->extension = 1;
 		memset(extensions, 0, sizeof(extensions));
 		janus_rtp_header_extension *extheader = (janus_rtp_header_extension *)extensions;
@@ -4920,6 +4921,24 @@ void janus_ice_relay_rtp(janus_ice_handle *handle, janus_plugin_rtp *packet) {
 			*(index+1) = (c<<3) + (f<<2) + (r1<<1) + r0;
 			index += 2;
 			extlen += 2;
+		}
+		
+		JANUS_LOG(LOG_INFO, "Playout delay %d %d %d\n", packet->extensions.playout_delay_min, packet->extensions.playout_delay_max, handle->stream->playout_delay_ext_id);
+		if(packet->video && packet->extensions.playout_delay_min != -1 && packet->extensions.playout_delay_max != -1 && handle->stream->playout_delay_ext_id > 0) {
+			/* Add playout-delay extension.
+			 * https://webrtc.googlesource.com/src/+/refs/heads/main/docs/native-code/rtp-hdrext/playout-delay
+			 *
+			 *  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+			 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+			 * |  ID   | len=2 |       MIN delay       |       MAX delay       |
+			 * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+			 */
+			*index = (handle->stream->playout_delay_ext_id << 4) | 0x02;
+			*(index+1) = (packet->extensions.playout_delay_min & 0x0FF0) >> 4;
+			*(index+2) = ((packet->extensions.playout_delay_min & 0x000F) << 4) + ((packet->extensions.playout_delay_max & 0x0F00) >> 8);
+			*(index+3) = packet->extensions.playout_delay_max & 0x00FF;
+			index += 4;
+			extlen += 4;
 		}
 		/* Calculate the whole length */
 		uint16_t words = extlen/4;

@@ -38,12 +38,15 @@ void janus_plugin_result_destroy(janus_plugin_result *result) {
 /* RTP, RTCP and data packets initialization */
 void janus_plugin_rtp_extensions_reset(janus_plugin_rtp_extensions *extensions) {
 	if(extensions) {
-		/* By extensions are not added to packets */
+		/* By default extensions are not added to packets */
 		extensions->audio_level = -1;
 		extensions->audio_level_vad = FALSE;
 		extensions->video_rotation = -1;
 		extensions->video_back_camera = FALSE;
 		extensions->video_flipped = FALSE;
+		extensions->playout_delay_min = -1;
+		extensions->playout_delay_max = -1;
+
 	}
 }
 void janus_plugin_rtp_reset(janus_plugin_rtp *packet) {

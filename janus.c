@@ -1554,6 +1554,8 @@ int janus_process_incoming_request(janus_request *request) {
 					handle->stream->videoorientation_ext_id = janus_rtp_header_extension_get_id(jsep_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
 					/* Check if the abs-send-time ID extension is being negotiated */
 					handle->stream->abs_send_time_ext_id = janus_rtp_header_extension_get_id(jsep_sdp, JANUS_RTP_EXTMAP_ABS_SEND_TIME);
+					/* Check if playout delay ID extension is being negotiated */
+					handle->stream->playout_delay_ext_id = janus_rtp_header_extension_get_id(jsep_sdp, JANUS_RTP_EXTMAP_PLAYOUT_DELAY);
 					/* Check if transport wide CC is supported */
 					int transport_wide_cc_ext_id = janus_rtp_header_extension_get_id(jsep_sdp, JANUS_RTP_EXTMAP_TRANSPORT_WIDE_CC);
 					handle->stream->do_transport_wide_cc = transport_wide_cc_ext_id > 0 ? TRUE : FALSE;
@@ -1617,6 +1619,8 @@ int janus_process_incoming_request(janus_request *request) {
 					handle->stream->videoorientation_ext_id = janus_rtp_header_extension_get_id(jsep_sdp, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION);
 					/* Check if the abs-send-time ID extension is being negotiated */
 					handle->stream->abs_send_time_ext_id = janus_rtp_header_extension_get_id(jsep_sdp, JANUS_RTP_EXTMAP_ABS_SEND_TIME);
+					/* Check if playout delay ID extension is being negotiated */
+					handle->stream->playout_delay_ext_id = janus_rtp_header_extension_get_id(jsep_sdp, JANUS_RTP_EXTMAP_PLAYOUT_DELAY);
 					/* Check if transport wide CC is supported */
 					int transport_wide_cc_ext_id = janus_rtp_header_extension_get_id(jsep_sdp, JANUS_RTP_EXTMAP_TRANSPORT_WIDE_CC);
 					handle->stream->do_transport_wide_cc = transport_wide_cc_ext_id > 0 ? TRUE : FALSE;
@@ -3711,7 +3715,7 @@ json_t *janus_plugin_handle_sdp(janus_plugin_session *plugin_session, janus_plug
 		}
 		/* Make sure we don't send the rid/repaired-rid attributes when offering ourselves */
 		int mid_ext_id = 0, transport_wide_cc_ext_id = 0, abs_send_time_ext_id = 0,
-			audiolevel_ext_id = 0, videoorientation_ext_id = 0;
+			audiolevel_ext_id = 0, videoorientation_ext_id = 0, playout_delay_ext_id = 0;
 		GList *temp = parsed_sdp->m_lines;
 		while(temp) {
 			janus_sdp_mline *m = (janus_sdp_mline *)temp->data;
@@ -3729,6 +3733,10 @@ json_t *janus_plugin_handle_sdp(janus_plugin_session *plugin_session, janus_plug
 						audiolevel_ext_id = atoi(a->value);
 					else if(strstr(a->value, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION))
 						videoorientation_ext_id = atoi(a->value);
+					else if(strstr(a->value, JANUS_RTP_EXTMAP_VIDEO_ORIENTATION))
+						videoorientation_ext_id = atoi(a->value);
+					else if(strstr(a->value, JANUS_RTP_EXTMAP_PLAYOUT_DELAY))
+						playout_delay_ext_id = atoi(a->value);
 					else if(strstr(a->value, JANUS_RTP_EXTMAP_RID) ||
 							strstr(a->value, JANUS_RTP_EXTMAP_REPAIRED_RID)) {
 						m->attributes = g_list_remove(m->attributes, a);
@@ -3753,6 +3761,8 @@ json_t *janus_plugin_handle_sdp(janus_plugin_session *plugin_session, janus_plug
 			ice_handle->stream->audiolevel_ext_id = audiolevel_ext_id;
 		if(ice_handle->stream && ice_handle->stream->videoorientation_ext_id != videoorientation_ext_id)
 			ice_handle->stream->videoorientation_ext_id = videoorientation_ext_id;
+		if(ice_handle->stream && ice_handle->stream->playout_delay_ext_id != playout_delay_ext_id)
+			ice_handle->stream->playout_delay_ext_id = playout_delay_ext_id;
 	} else {
 		/* Check if the answer does contain the mid/rid/repaired-rid/abs-send-time/twcc extmaps */
 		gboolean do_mid = FALSE, do_rid = FALSE, do_repaired_rid = FALSE,

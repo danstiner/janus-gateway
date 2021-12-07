@@ -482,8 +482,10 @@ struct janus_ice_stream {
 	gint audiolevel_ext_id;
 	/*! \brief Video orientation extension ID */
 	gint videoorientation_ext_id;
-	/*! \brief Absolute Send Time ext ID */
+	/*! \brief Absolute Send Time extension ID */
 	gint abs_send_time_ext_id;
+	/*! \brief Playout delay extension ID */
+	gint playout_delay_ext_id;
 	/*! \brief Whether we do transport wide cc for video */
 	gboolean do_transport_wide_cc;
 	/*! \brief Transport wide cc rtp ext ID */
@@ -496,7 +498,7 @@ struct janus_ice_stream {
 	guint32 transport_wide_cc_last_feedback_seq_num;
 	/*! \brief Transport wide cc transport seq num wrap cycles */
 	guint16 transport_wide_cc_cycles;
-	/*! \brief Transport wide cc rtp ext ID */
+	/*! \brief Transport wide cc feedback count */
 	guint transport_wide_cc_feedback_count;
 	/*! \brief GLib list of transport wide cc stats in reverse received order */
 	GSList *transport_wide_received_seq_nums;
